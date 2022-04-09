@@ -1,0 +1,67 @@
+---
+title: "HW2"
+output: html_document
+---
+
+# Question 1
+```{r}
+library(tidyverse)
+library(tidymodels)
+abalone <- read.csv("~/Downloads/homework-2/data/abalone.csv")
+View(abalone)
+abalone <- abalone %>%
+  mutate(age = rings + 1.5) %>%
+  select(age, everything()
+
+View(abalone)
+hist(abalone$age, freq = FALSE)
+lines(density(abalone$age), lwd = 2, col = 'red')
+```
+The distribution is relatively right skewed, which implies that the mean of age is greater than the median of age. 
+
+# Question 2
+```{r}
+set.seed(4177)
+
+abalone_split <- initial_split(abalone, prop = 0.8, strata = NULL)
+abalone_train <- training(abalone_split)
+abalone_test <- testing(abalone_split)
+
+```
+
+# Question 3
+```{r}
+abalone_recipe <- recipe(age ~ ., data = abalone_train) %>%
+  step_rm("rings") %>%
+  step_interact(~type:shucked_weight) %>%
+  step_interact(~longest_shell:diameter) %>%
+  step_interact(~shucked_weight:shell_weight) %>%
+  step_normalize()
+
+```
+Rings should not be used to predict age because it was already used to calculate age. Including the variable will only mess with the results as we would be adding something that has already been accounted for.
+
+# Question 4
+```{r}
+lm_model <- linear_reg() %>% 
+  set_engine("lm")
+```
+
+# Question 5
+```{r}
+lm_wflow <- workflow() %>%
+  add_model(lm_model) %>%
+  add_recipe(abalone_recipe)
+
+lm_fit <- fit(lm_wflow, abalone_train)
+lm_fit %>% 
+  extract_fit_parsnip() %>% 
+  tidy()
+```
+
+# Question 6
+```{r}
+
+```
+
+# Question 7
