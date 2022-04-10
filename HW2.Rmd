@@ -11,7 +11,7 @@ abalone <- read.csv("~/Downloads/homework-2/data/abalone.csv")
 View(abalone)
 abalone <- abalone %>%
   mutate(age = rings + 1.5) %>%
-  select(age, everything()
+  select(age, everything())
 
 View(abalone)
 hist(abalone$age, freq = FALSE)
@@ -36,7 +36,9 @@ abalone_recipe <- recipe(age ~ ., data = abalone_train) %>%
   step_interact(~type:shucked_weight) %>%
   step_interact(~longest_shell:diameter) %>%
   step_interact(~shucked_weight:shell_weight) %>%
-  step_normalize()
+  step_normalize() %>%
+  step_dummy(all_nominal_predictors())
+
 
 ```
 Rings should not be used to predict age because it was already used to calculate age. Including the variable will only mess with the results as we would be adding something that has already been accounted for.
@@ -53,15 +55,34 @@ lm_wflow <- workflow() %>%
   add_model(lm_model) %>%
   add_recipe(abalone_recipe)
 
-lm_fit <- fit(lm_wflow, abalone_train)
-lm_fit %>% 
-  extract_fit_parsnip() %>% 
-  tidy()
 ```
 
 # Question 6
 ```{r}
+lm_fit <- fit(lm_wflow, abalone_train)
+lm_fit %>% 
+  extract_fit_parsnip() %>% 
+  tidy()
+
+x <- data.frame(type = "F",longest_shell = 0.50, diameter = 0.10, height = 0.30, whole_weight = 4, shucked_weight = 1, viscera_weight = 2, shell_weight = 1, rings = NA)
+
 
 ```
 
 # Question 7
+```{r}
+library(yardstick)
+abalone_train_res <- predict(lm_fit, new_data = abalone_train %>% select(-age))
+abalone_train_res %>% 
+  head()
+
+abalone_train_res <- bind_cols(abalone_train_res, abalone_train %>% select(age))
+abalone_train_res %>% 
+  head()
+
+rmse(abalone_train_res, truth = age, estimate = .pred)
+abalone_metrics <- metric_set(rmse, rsq, mae)
+abalone_metrics(abalone_train_res, truth = age, 
+                estimate = .pred)
+```
+
