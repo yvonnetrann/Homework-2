@@ -71,7 +71,7 @@ predict(lm_fit, new_data = female_ab)
 
 ```
 
-# Question 7 ()
+# Question 7
 ```{r}
 library(yardstick)
 abalone_train_res <- predict(lm_fit, new_data = abalone_train %>% select(-age))
