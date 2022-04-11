@@ -23,7 +23,7 @@ The distribution is relatively right skewed, which implies that the mean of age 
 ```{r}
 set.seed(4177)
 
-abalone_split <- initial_split(abalone, prop = 0.8, strata = NULL)
+abalone_split <- initial_split(abalone, prop = 0.8, strata = age)
 abalone_train <- training(abalone_split)
 abalone_test <- testing(abalone_split)
 
@@ -60,11 +60,13 @@ lm_wflow <- workflow() %>%
 # Question 6
 ```{r}
 lm_fit <- fit(lm_wflow, abalone_train)
-lm_fit %>% 
+tib <- lm_fit %>% 
   extract_fit_parsnip() %>% 
   tidy()
 
-x <- data.frame(type = "F",longest_shell = 0.50, diameter = 0.10, height = 0.30, whole_weight = 4, shucked_weight = 1, viscera_weight = 2, shell_weight = 1, rings = NA)
+female_ab <- data.frame(longest_shell = 0.50, diameter = 0.10, height = 0.30, whole_weight = 4, shucked_weight = 1, viscera_weight = 2, shell_weight = 1, type = "F")
+
+predict(lm_fit, new_data = female_ab)
 
 
 ```
