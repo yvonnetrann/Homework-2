@@ -1,6 +1,8 @@
 ---
 title: "HW2"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 # Question 1
@@ -10,11 +12,10 @@ library(tidymodels)
 abalone <- read.csv("~/Downloads/homework-2/data/abalone.csv")
 View(abalone)
 abalone <- abalone %>%
-  mutate(age = rings + 1.5) %>%
-  select(age, everything())
+  mutate(age = rings + 1.5)
 
 View(abalone)
-hist(abalone$age, freq = FALSE)
+hist(abalone$age, freq = FALSE) 
 lines(density(abalone$age), lwd = 2, col = 'red')
 ```
 The distribution is relatively right skewed, which implies that the mean of age is greater than the median of age. 
@@ -31,17 +32,16 @@ abalone_test <- testing(abalone_split)
 
 # Question 3
 ```{r}
-abalone_recipe <- recipe(age ~ ., data = abalone_train) %>%
-  step_rm("rings") %>%
+rec <- recipe(age ~ type + longest_shell + diameter + height + whole_weight + shucked_weight + viscera_weight + shell_weight, data = abalone_train)
+
+abalone_recipe <- rec %>%
+  step_dummy(all_nominal_predictors()) %>%
   step_interact(~type:shucked_weight) %>%
   step_interact(~longest_shell:diameter) %>%
   step_interact(~shucked_weight:shell_weight) %>%
-  step_normalize() %>%
-  step_dummy(all_nominal_predictors())
-
-
+  step_normalize(all_predictors())
 ```
-Rings should not be used to predict age because it was already used to calculate age. Including the variable will only mess with the results as we would be adding something that has already been accounted for.
+Rings should not be used to predict age because it was already used to calculate age. Including the variable will only mess with the results as we would be adding something that has already been accounted for. (It has been removed in the steps for Question 1)
 
 # Question 4
 ```{r}
@@ -60,11 +60,11 @@ lm_wflow <- workflow() %>%
 # Question 6
 ```{r}
 lm_fit <- fit(lm_wflow, abalone_train)
-tib <- lm_fit %>% 
+lm_fit %>% 
   extract_fit_parsnip() %>% 
   tidy()
 
-female_ab <- data.frame(longest_shell = 0.50, diameter = 0.10, height = 0.30, whole_weight = 4, shucked_weight = 1, viscera_weight = 2, shell_weight = 1, type = "F")
+female_ab <- data.frame(type = "F",longest_shell = 0.50, diameter = 0.10, height = 0.30, whole_weight = 4, shucked_weight = 1, viscera_weight = 2, shell_weight = 1)
 
 predict(lm_fit, new_data = female_ab)
 
